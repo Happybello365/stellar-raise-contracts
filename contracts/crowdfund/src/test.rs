@@ -1,6 +1,9 @@
 #![cfg(test)]
 
-use soroban_sdk::{testutils::{Address as _, Ledger, Events}, token, Address, Env};
+use soroban_sdk::{
+    testutils::{Address as _, Events, Ledger},
+    token, Address, Env,
+};
 
 use crate::{CrowdfundContract, CrowdfundContractClient};
 
@@ -100,7 +103,16 @@ fn test_double_initialize_panics() {
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
 
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
     let result = client.try_initialize(
         &creator,
         &token_address,
@@ -127,7 +139,16 @@ fn test_contribute() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let contributor = Address::generate(&env);
     mint_to(&env, &token_address, &admin, &contributor, 500_000);
@@ -145,7 +166,16 @@ fn test_multiple_contributions() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let alice = Address::generate(&env);
     let bob = Address::generate(&env);
@@ -167,7 +197,16 @@ fn test_contribute_after_deadline_panics() {
     let deadline = env.ledger().timestamp() + 100;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     // Fast-forward past the deadline.
     env.ledger().set_timestamp(deadline + 1);
@@ -191,7 +230,16 @@ fn test_withdraw_after_goal_met() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let contributor = Address::generate(&env);
     mint_to(&env, &token_address, &admin, &contributor, 1_000_000);
@@ -219,7 +267,16 @@ fn test_withdraw_before_deadline_panics() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let contributor = Address::generate(&env);
     mint_to(&env, &token_address, &admin, &contributor, 1_000_000);
@@ -241,7 +298,16 @@ fn test_withdraw_goal_not_reached_panics() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let contributor = Address::generate(&env);
     mint_to(&env, &token_address, &admin, &contributor, 500_000);
@@ -266,7 +332,16 @@ fn test_refund_single_when_goal_not_met() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let alice = Address::generate(&env);
     let bob = Address::generate(&env);
@@ -296,7 +371,16 @@ fn test_refund_when_goal_reached_panics() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let contributor = Address::generate(&env);
     mint_to(&env, &token_address, &admin, &contributor, 1_000_000);
@@ -305,7 +389,7 @@ fn test_refund_when_goal_reached_panics() {
     env.ledger().set_timestamp(deadline + 1);
 
     let result = client.try_refund_single(&contributor);
-    
+
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err().unwrap(),
@@ -319,7 +403,16 @@ fn test_refund_single_before_deadline_fails() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let contributor = Address::generate(&env);
     mint_to(&env, &token_address, &admin, &contributor, 500_000);
@@ -329,9 +422,11 @@ fn test_refund_single_before_deadline_fails() {
     let result = client.try_refund_single(&contributor);
 
     assert!(result.is_err());
-    assert_eq!(result.unwrap_err().unwrap(), crate::ContractError::CampaignStillActive);
+    assert_eq!(
+        result.unwrap_err().unwrap(),
+        crate::ContractError::CampaignStillActive
+    );
 }
-
 
 // ── Bug Condition Exploration Test ─────────────────────────────────────────
 
@@ -358,10 +453,28 @@ fn test_bug_condition_exploration_all_error_conditions_panic() {
         let (env, client, creator, token_address, _admin) = setup_env();
         let deadline = env.ledger().timestamp() + 3600;
         let goal: i128 = 1_000_000;
-        
-        client.initialize(&creator, &token_address, &goal, &deadline, &1_000, &default_title(&env), &default_description(&env), &None);
-        let result = client.try_initialize(&creator, &token_address, &goal, &deadline, &1_000, &default_title(&env), &default_description(&env), &None);
-        
+
+        client.initialize(
+            &creator,
+            &token_address,
+            &goal,
+            &deadline,
+            &1_000,
+            &default_title(&env),
+            &default_description(&env),
+            &None,
+        );
+        let result = client.try_initialize(
+            &creator,
+            &token_address,
+            &goal,
+            &deadline,
+            &1_000,
+            &default_title(&env),
+            &default_description(&env),
+            &None,
+        );
+
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err().unwrap(),
@@ -374,8 +487,17 @@ fn test_bug_condition_exploration_all_error_conditions_panic() {
         let (env, client, creator, token_address, admin) = setup_env();
         let deadline = env.ledger().timestamp() + 100;
         let goal: i128 = 1_000_000;
-        client.initialize(&creator, &token_address, &goal, &deadline, &1_000, &default_title(&env), &default_description(&env), &None);
-        
+        client.initialize(
+            &creator,
+            &token_address,
+            &goal,
+            &deadline,
+            &1_000,
+            &default_title(&env),
+            &default_description(&env),
+            &None,
+        );
+
         env.ledger().set_timestamp(deadline + 1);
 
         let contributor = Address::generate(&env);
@@ -391,8 +513,17 @@ fn test_bug_condition_exploration_all_error_conditions_panic() {
         let (env, client, creator, token_address, admin) = setup_env();
         let deadline = env.ledger().timestamp() + 3600;
         let goal: i128 = 1_000_000;
-        client.initialize(&creator, &token_address, &goal, &deadline, &1_000, &default_title(&env), &default_description(&env), &None);
-        
+        client.initialize(
+            &creator,
+            &token_address,
+            &goal,
+            &deadline,
+            &1_000,
+            &default_title(&env),
+            &default_description(&env),
+            &None,
+        );
+
         let contributor = Address::generate(&env);
         mint_to(&env, &token_address, &admin, &contributor, 1_000_000);
         client.contribute(&contributor, &1_000_000);
@@ -411,8 +542,17 @@ fn test_bug_condition_exploration_all_error_conditions_panic() {
         let (env, client, creator, token_address, admin) = setup_env();
         let deadline = env.ledger().timestamp() + 3600;
         let goal: i128 = 1_000_000;
-        client.initialize(&creator, &token_address, &goal, &deadline, &1_000, &default_title(&env), &default_description(&env), &None);
-        
+        client.initialize(
+            &creator,
+            &token_address,
+            &goal,
+            &deadline,
+            &1_000,
+            &default_title(&env),
+            &default_description(&env),
+            &None,
+        );
+
         let contributor = Address::generate(&env);
         mint_to(&env, &token_address, &admin, &contributor, 500_000);
         client.contribute(&contributor, &500_000);
@@ -429,14 +569,23 @@ fn test_bug_condition_exploration_all_error_conditions_panic() {
         let (env, client, creator, token_address, admin) = setup_env();
         let deadline = env.ledger().timestamp() + 3600;
         let goal: i128 = 1_000_000;
-        client.initialize(&creator, &token_address, &goal, &deadline, &1_000, &default_title(&env), &default_description(&env), &None);
-        
+        client.initialize(
+            &creator,
+            &token_address,
+            &goal,
+            &deadline,
+            &1_000,
+            &default_title(&env),
+            &default_description(&env),
+            &None,
+        );
+
         let contributor = Address::generate(&env);
         mint_to(&env, &token_address, &admin, &contributor, 500_000);
         client.contribute(&contributor, &500_000);
-        
+
         let result = client.try_refund_single(&contributor);
-        
+
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err().unwrap(),
@@ -449,15 +598,24 @@ fn test_bug_condition_exploration_all_error_conditions_panic() {
         let (env, client, creator, token_address, admin) = setup_env();
         let deadline = env.ledger().timestamp() + 3600;
         let goal: i128 = 1_000_000;
-        client.initialize(&creator, &token_address, &goal, &deadline, &1_000, &default_title(&env), &default_description(&env), &None);
-        
+        client.initialize(
+            &creator,
+            &token_address,
+            &goal,
+            &deadline,
+            &1_000,
+            &default_title(&env),
+            &default_description(&env),
+            &None,
+        );
+
         let contributor = Address::generate(&env);
         mint_to(&env, &token_address, &admin, &contributor, 1_000_000);
         client.contribute(&contributor, &1_000_000);
 
         env.ledger().set_timestamp(deadline + 1);
         let result = client.try_refund_single(&contributor);
-        
+
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().unwrap(), ContractError::GoalReached);
     }
@@ -644,7 +802,16 @@ fn test_double_withdraw_panics() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let contributor = Address::generate(&env);
     mint_to(&env, &token_address, &admin, &contributor, 1_000_000);
@@ -663,7 +830,16 @@ fn test_double_refund_single_panics() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let alice = Address::generate(&env);
     mint_to(&env, &token_address, &admin, &alice, 500_000);
@@ -749,7 +925,16 @@ fn test_contribute_above_minimum() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 10_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let contributor = Address::generate(&env);
     mint_to(&env, &token_address, &admin, &contributor, 50_000);
@@ -769,7 +954,16 @@ fn test_get_user_tier_bronze_level() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 10_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let bronze = soroban_sdk::String::from_str(&env, "Bronze");
     let silver = soroban_sdk::String::from_str(&env, "Silver");
@@ -794,7 +988,16 @@ fn test_get_user_tier_gold_level() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 10_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let bronze = soroban_sdk::String::from_str(&env, "Bronze");
     let silver = soroban_sdk::String::from_str(&env, "Silver");
@@ -819,7 +1022,16 @@ fn test_get_user_tier_non_contributor_returns_none() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let bronze = soroban_sdk::String::from_str(&env, "Bronze");
     client.add_reward_tier(&creator, &bronze, &10_000);
@@ -1002,7 +1214,16 @@ fn test_add_multiple_roadmap_items_in_order() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let current_time = env.ledger().timestamp();
     let date1 = current_time + 86400;
@@ -1035,7 +1256,16 @@ fn test_add_roadmap_item_with_past_date_panics() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let current_time = env.ledger().timestamp();
     // Set a past date by moving time forward first, then trying to add an item with an earlier date
@@ -1054,7 +1284,16 @@ fn test_add_roadmap_item_with_current_date_panics() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let current_time = env.ledger().timestamp();
     let description = soroban_sdk::String::from_str(&env, "Current milestone");
@@ -1070,7 +1309,16 @@ fn test_add_roadmap_item_with_empty_description_panics() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let current_time = env.ledger().timestamp();
     let roadmap_date = current_time + 86400;
@@ -1098,7 +1346,16 @@ fn test_add_roadmap_item_by_non_creator_panics() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     env.mock_all_auths_allowing_non_root_auth();
     env.set_auths(&[]);
@@ -1127,7 +1384,16 @@ fn test_roadmap_empty_after_initialization() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let roadmap = client.roadmap();
     assert_eq!(roadmap.len(), 0);
@@ -1161,7 +1427,16 @@ fn test_get_campaign_info_initial() {
     let deadline = env.ledger().timestamp() + 3600;
     let goal: i128 = 1_000_000;
     let min_contribution: i128 = 1_000;
-    client.initialize(&creator, &token_address, &goal, &deadline, &min_contribution, &default_title(&env), &default_description(&env), &None);
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
 
     let info = client.get_campaign_info();
 
@@ -1459,4 +1734,373 @@ fn test_withdraw_after_deadline_panics() {
     env.ledger().set_timestamp(deadline + 1);
 
     client.withdraw_contribution(&contributor, &50_000); // should panic
+}
+
+// ── Subscription Model Tests ───────────────────────────────────────────────
+
+#[test]
+fn test_subscribe_creates_subscription() {
+    let (env, client, creator, token_address, admin) = setup_env();
+
+    let deadline = env.ledger().timestamp() + 3600;
+    let goal: i128 = 1_000_000;
+    let hard_cap: i128 = goal * 2;
+    let min_contribution: i128 = 1_000;
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &hard_cap,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
+
+    let subscriber = Address::generate(&env);
+    let amount: i128 = 5_000;
+    let interval: u64 = 86400; // 1 day
+
+    // Subscribe
+    client.subscribe(&subscriber, &amount, &interval);
+
+    // Verify subscription was created
+    let subscription = client.get_subscription(&subscriber);
+    assert!(subscription.is_some());
+
+    let sub = subscription.unwrap();
+    assert_eq!(sub.amount, amount);
+    assert_eq!(sub.interval, interval);
+    assert_eq!(sub.last_processed, env.ledger().timestamp());
+
+    // Verify subscriber is in list
+    let subscribers = client.get_subscribers();
+    assert_eq!(subscribers.len(), 1);
+    assert_eq!(subscribers.get(0).unwrap(), subscriber);
+}
+
+#[test]
+fn test_process_subscriptions_transfers_funds_after_interval() {
+    let (env, client, creator, token_address, admin) = setup_env();
+
+    let deadline = env.ledger().timestamp() + 10000;
+    let goal: i128 = 1_000_000;
+    let hard_cap: i128 = goal * 2;
+    let min_contribution: i128 = 1_000;
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &hard_cap,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
+
+    let subscriber = Address::generate(&env);
+    let amount: i128 = 5_000;
+    let interval: u64 = 100; // 100 seconds
+
+    // Mint tokens to subscriber
+    mint_to(&env, &token_address, &admin, &subscriber, 50_000);
+
+    // Subscribe
+    client.subscribe(&subscriber, &amount, &interval);
+
+    // Process immediately - should not process (interval not elapsed)
+    let processed = client.process_subscriptions();
+    assert_eq!(processed, 0);
+
+    // Fast forward past interval
+    env.ledger()
+        .set_timestamp(env.ledger().timestamp() + interval + 1);
+
+    // Process subscriptions
+    let processed = client.process_subscriptions();
+    assert_eq!(processed, 1);
+
+    // Verify funds were transferred
+    let total_raised = client.total_raised();
+    assert_eq!(total_raised, amount);
+
+    // Verify contribution was tracked
+    let contribution = client.contribution(&subscriber);
+    assert_eq!(contribution, amount);
+}
+
+#[test]
+fn test_process_subscriptions_skips_when_interval_not_elapsed() {
+    let (env, client, creator, token_address, admin) = setup_env();
+
+    let deadline = env.ledger().timestamp() + 10000;
+    let goal: i128 = 1_000_000;
+    let hard_cap: i128 = goal * 2;
+    let min_contribution: i128 = 1_000;
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &hard_cap,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
+
+    let subscriber = Address::generate(&env);
+    let amount: i128 = 5_000;
+    let interval: u64 = 1000; // 1000 seconds
+
+    mint_to(&env, &token_address, &admin, &subscriber, 50_000);
+
+    // Subscribe
+    client.subscribe(&subscriber, &amount, &interval);
+
+    // Fast forward but not past interval
+    env.ledger()
+        .set_timestamp(env.ledger().timestamp() + interval - 10);
+
+    // Process subscriptions - should skip
+    let processed = client.process_subscriptions();
+    assert_eq!(processed, 0);
+
+    // Verify no funds were transferred
+    let total_raised = client.total_raised();
+    assert_eq!(total_raised, 0);
+}
+
+#[test]
+fn test_unsubscribe_prevents_future_processing() {
+    let (env, client, creator, token_address, admin) = setup_env();
+
+    let deadline = env.ledger().timestamp() + 10000;
+    let goal: i128 = 1_000_000;
+    let hard_cap: i128 = goal * 2;
+    let min_contribution: i128 = 1_000;
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &hard_cap,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
+
+    let subscriber = Address::generate(&env);
+    let amount: i128 = 5_000;
+    let interval: u64 = 100;
+
+    mint_to(&env, &token_address, &admin, &subscriber, 50_000);
+
+    // Subscribe
+    client.subscribe(&subscriber, &amount, &interval);
+
+    // Unsubscribe
+    let result = client.try_unsubscribe(&subscriber);
+    assert!(result.is_ok());
+
+    // Verify subscription was removed
+    let subscription = client.get_subscription(&subscriber);
+    assert!(subscription.is_none());
+
+    // Verify subscriber was removed from list
+    let subscribers = client.get_subscribers();
+    assert_eq!(subscribers.len(), 0);
+
+    // Fast forward past interval
+    env.ledger()
+        .set_timestamp(env.ledger().timestamp() + interval + 1);
+
+    // Process subscriptions - should not process anything
+    let processed = client.process_subscriptions();
+    assert_eq!(processed, 0);
+}
+
+#[test]
+fn test_subscribe_rejects_zero_amount() {
+    let (env, client, creator, token_address, _admin) = setup_env();
+
+    let deadline = env.ledger().timestamp() + 3600;
+    let goal: i128 = 1_000_000;
+    let hard_cap: i128 = goal * 2;
+    let min_contribution: i128 = 1_000;
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &hard_cap,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
+
+    let subscriber = Address::generate(&env);
+    let amount: i128 = 0;
+    let interval: u64 = 86400;
+
+    // Try to subscribe with zero amount
+    let result = client.try_subscribe(&subscriber, &amount, &interval);
+    assert!(result.is_err());
+    assert_eq!(
+        result.unwrap_err().unwrap(),
+        crate::ContractError::InvalidSubscriptionAmount
+    );
+}
+
+#[test]
+fn test_subscribe_rejects_zero_interval() {
+    let (env, client, creator, token_address, _admin) = setup_env();
+
+    let deadline = env.ledger().timestamp() + 3600;
+    let goal: i128 = 1_000_000;
+    let hard_cap: i128 = goal * 2;
+    let min_contribution: i128 = 1_000;
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &hard_cap,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
+
+    let subscriber = Address::generate(&env);
+    let amount: i128 = 5_000;
+    let interval: u64 = 0;
+
+    // Try to subscribe with zero interval
+    let result = client.try_subscribe(&subscriber, &amount, &interval);
+    assert!(result.is_err());
+    assert_eq!(
+        result.unwrap_err().unwrap(),
+        crate::ContractError::InvalidSubscriptionInterval
+    );
+}
+
+#[test]
+fn test_subscribe_respects_minimum_contribution() {
+    let (env, client, creator, token_address, _admin) = setup_env();
+
+    let deadline = env.ledger().timestamp() + 3600;
+    let goal: i128 = 1_000_000;
+    let hard_cap: i128 = goal * 2;
+    let min_contribution: i128 = 10_000;
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &hard_cap,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
+
+    let subscriber = Address::generate(&env);
+    let amount: i128 = 5_000; // Less than min_contribution
+    let interval: u64 = 86400;
+
+    // Try to subscribe with amount below minimum
+    let result = client.try_subscribe(&subscriber, &amount, &interval);
+    assert!(result.is_err());
+    assert_eq!(
+        result.unwrap_err().unwrap(),
+        crate::ContractError::InvalidSubscriptionAmount
+    );
+}
+
+#[test]
+fn test_multiple_subscriptions_processed_correctly() {
+    let (env, client, creator, token_address, admin) = setup_env();
+
+    let deadline = env.ledger().timestamp() + 10000;
+    let goal: i128 = 1_000_000;
+    let hard_cap: i128 = goal * 2;
+    let min_contribution: i128 = 1_000;
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &hard_cap,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
+
+    let subscriber1 = Address::generate(&env);
+    let subscriber2 = Address::generate(&env);
+    let subscriber3 = Address::generate(&env);
+
+    let amount1: i128 = 5_000;
+    let amount2: i128 = 10_000;
+    let amount3: i128 = 7_500;
+    let interval: u64 = 100;
+
+    // Mint tokens
+    mint_to(&env, &token_address, &admin, &subscriber1, 50_000);
+    mint_to(&env, &token_address, &admin, &subscriber2, 50_000);
+    mint_to(&env, &token_address, &admin, &subscriber3, 50_000);
+
+    // Subscribe all three
+    client.subscribe(&subscriber1, &amount1, &interval);
+    client.subscribe(&subscriber2, &amount2, &interval);
+    client.subscribe(&subscriber3, &amount3, &interval);
+
+    // Fast forward past interval
+    env.ledger()
+        .set_timestamp(env.ledger().timestamp() + interval + 1);
+
+    // Process subscriptions
+    let processed = client.process_subscriptions();
+    assert_eq!(processed, 3);
+
+    // Verify total raised
+    let total_raised = client.total_raised();
+    assert_eq!(total_raised, amount1 + amount2 + amount3);
+}
+
+#[test]
+fn test_unsubscribe_nonexistent_subscription_fails() {
+    let (env, client, creator, token_address, _admin) = setup_env();
+
+    let deadline = env.ledger().timestamp() + 3600;
+    let goal: i128 = 1_000_000;
+    let hard_cap: i128 = goal * 2;
+    let min_contribution: i128 = 1_000;
+    client.initialize(
+        &creator,
+        &token_address,
+        &goal,
+        &hard_cap,
+        &deadline,
+        &min_contribution,
+        &default_title(&env),
+        &default_description(&env),
+        &None,
+    );
+
+    let subscriber = Address::generate(&env);
+
+    // Try to unsubscribe without subscribing first
+    let result = client.try_unsubscribe(&subscriber);
+    assert!(result.is_err());
+    assert_eq!(
+        result.unwrap_err().unwrap(),
+        crate::ContractError::SubscriptionNotFound
+    );
 }
