@@ -8,7 +8,8 @@
         "jsx": "react-jsx",
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "module": "commonjs"
+        "module": "commonjs",
+        "allowJs": true
       }
     }]
   },
