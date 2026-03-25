@@ -56,6 +56,7 @@ mod test;
 #[cfg(test)]
 mod auth_tests;
 #[cfg(test)]
+#[path = "campaign_goal_minimum.test.rs"]
 mod campaign_goal_minimum_test;
 pub mod crowdfund_initialize_function;
 #[cfg(test)]
