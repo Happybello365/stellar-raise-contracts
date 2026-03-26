@@ -18,7 +18,7 @@
 
 set -euo pipefail
 
-# ── Configuration ────────────────────────────────────────────────────────────
+# ── Exit code constants ───────────────────────────────────────────────────────
 
 NETWORK="${NETWORK:-testnet}"
 DEPLOY_LOG="${DEPLOY_LOG:-deploy_errors.log}"
@@ -100,7 +100,7 @@ run_captured() {
 
 # @notice Prints usage and exits 0.
 print_help() {
-  cat <<'HELPEOF'
+  cat <<HELPEOF
 Usage: deployment_shell_script.sh [OPTIONS] <creator> <token> <goal> <deadline> [min_contribution]
 
 Builds, deploys, and initialises the Stellar Raise crowdfund contract.
@@ -110,7 +110,7 @@ Positional arguments:
   token              Stellar address of the token contract
   goal               Funding goal in stroops (positive integer)
   deadline           Unix timestamp for campaign end (must be in the future)
-  min_contribution   Minimum pledge amount (default: 1)
+  min_contribution   Minimum pledge amount (default: $DEFAULT_MIN_CONTRIBUTION)
 
 Options:
   --help             Show this help message and exit
@@ -123,11 +123,11 @@ Environment variables:
   DRY_RUN            Set to 'true' to enable dry-run mode
 
 Exit codes:
-  0  success             3  build failure        6  network failure
-  1  missing dependency  4  deploy failure
-  2  invalid argument    5  init failure
+  $EXIT_OK  success             $EXIT_BUILD_FAIL  build failure        $EXIT_NETWORK_FAIL  network failure
+  $EXIT_MISSING_DEP  missing dependency  $EXIT_DEPLOY_FAIL  deploy failure
+  $EXIT_BAD_ARG  invalid argument    $EXIT_INIT_FAIL  init failure
 HELPEOF
-  exit 0
+  exit $EXIT_OK
 }
 
 # ── Argument validation ───────────────────────────────────────────────────────
@@ -158,9 +158,9 @@ validate_args() {
 check_network() {
   local rpc_url
   case "$NETWORK" in
-    testnet)   rpc_url="https://soroban-testnet.stellar.org/health" ;;
-    mainnet)   rpc_url="https://soroban.stellar.org/health"         ;;
-    futurenet) rpc_url="https://rpc-futurenet.stellar.org/health"   ;;
+    testnet)   rpc_url="$RPC_TESTNET"   ;;
+    mainnet)   rpc_url="$RPC_MAINNET"   ;;
+    futurenet) rpc_url="$RPC_FUTURENET" ;;
     *)
       warn "Unknown network '$NETWORK' — skipping connectivity pre-check"
       return 0
@@ -178,7 +178,7 @@ check_network() {
 
 # ── Core steps ───────────────────────────────────────────────────────────────
 
-# @notice Compiles the contract to WASM.
+# @notice Compiles the contract to WASM using the WASM_TARGET constant.
 build_contract() {
   emit_event "step_start" "build" "Building WASM"
   log "INFO" "Building WASM..."
@@ -266,7 +266,7 @@ main() {
   local token="${positional[1]:-}"
   local goal="${positional[2]:-}"
   local deadline="${positional[3]:-}"
-  local min_contribution="${positional[4]:-1}"
+  local min_contribution="${positional[4]:-$DEFAULT_MIN_CONTRIBUTION}"
 
   # Truncate both logs for this run
   : > "$DEPLOY_LOG"

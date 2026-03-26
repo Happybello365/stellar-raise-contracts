@@ -17,6 +17,27 @@ actionable message. This script adds:
   that the frontend UI can stream-parse to render live step status and typed errors.
 - Argument validation with clear messages before any network call is made.
 
+## Constants reference
+
+| Constant                  | Value                                          | Purpose                          |
+| :------------------------ | :--------------------------------------------- | :------------------------------- |
+| `EXIT_OK`                 | `0`                                            | Success                          |
+| `EXIT_MISSING_DEP`        | `1`                                            | Missing CLI dependency           |
+| `EXIT_BAD_ARG`            | `2`                                            | Invalid / missing argument       |
+| `EXIT_BUILD_FAIL`         | `3`                                            | `cargo build` failure            |
+| `EXIT_DEPLOY_FAIL`        | `4`                                            | `stellar contract deploy` failure|
+| `EXIT_INIT_FAIL`          | `5`                                            | `stellar contract invoke` failure|
+| `EXIT_NETWORK_FAIL`       | `6`                                            | RPC connectivity failure         |
+| `WASM_TARGET`             | `wasm32-unknown-unknown`                       | Rust compilation target          |
+| `WASM_PATH`               | `target/wasm32-unknown-unknown/release/crowdfund.wasm` | Expected WASM artifact  |
+| `RPC_TESTNET`             | `https://soroban-testnet.stellar.org/health`   | Testnet health endpoint          |
+| `RPC_MAINNET`             | `https://soroban.stellar.org/health`           | Mainnet health endpoint          |
+| `RPC_FUTURENET`           | `https://rpc-futurenet.stellar.org/health`     | Futurenet health endpoint        |
+| `NETWORK_TIMEOUT`         | `10`                                           | curl max-time (seconds)          |
+| `DEFAULT_NETWORK`         | `testnet`                                      | Default Stellar network          |
+| `DEFAULT_DEPLOY_LOG`      | `deploy_errors.log`                            | Default log file path            |
+| `DEFAULT_MIN_CONTRIBUTION`| `1`                                            | Default minimum pledge (stroops) |
+
 ## Usage
 
 ```bash
@@ -146,8 +167,8 @@ for await (const line of readLines('deploy_events.json')) {
 bash scripts/deployment_shell_script.test.sh
 ```
 
-No external test framework is required. The test file stubs `cargo` and
-`stellar` so the suite runs offline and in CI without network access.
+No external test framework is required. The test file stubs `cargo`, `stellar`,
+and `curl` so the suite runs fully offline and in CI without network access.
 
 ### Test coverage
 
