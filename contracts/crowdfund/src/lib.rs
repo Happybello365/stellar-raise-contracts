@@ -22,6 +22,7 @@ pub mod soroban_sdk_minor;
 pub mod stellar_token_minter;
 pub mod stream_processing_optimization;
 pub mod withdraw_event_emission;
+pub mod security_compliance_automation;
 
 // ── Imports from modules ──────────────────────────────────────────────────────
 
@@ -63,6 +64,9 @@ mod npm_package_lock_test;
 #[path = "proptest_generator_boundary.test.rs"]
 mod proptest_generator_boundary_test;
 #[cfg(test)]
+#[path = "proptest_generator_boundary_tests.rs"]
+mod proptest_generator_boundary_tests;
+#[cfg(test)]
 #[path = "soroban_sdk_minor_test.rs"]
 mod soroban_sdk_minor_test;
 #[cfg(test)]
@@ -74,6 +78,9 @@ mod stellar_token_minter_test_comprehensive;
 #[cfg(test)]
 #[path = "stream_processing_optimization.test.rs"]
 mod stream_processing_optimization_test;
+#[cfg(test)]
+#[path = "security_compliance_automation.test.rs"]
+mod security_compliance_automation_test;
 
 // --- Constants ---
 const CONTRACT_VERSION: u32 = 3;
@@ -169,7 +176,7 @@ pub enum DataKey {
     NFTContract,
     /// Decimal precision of the campaign token (e.g. 7 for XLM, 6 for USDC).
     TokenDecimals,
-    /// Maximum individual contribution amount.
+    /// Optional cap on the amount a single contributor may contribute.
     MaxIndividualContribution,
 
     // ── Role-separation keys (access_control module) ──────────────────────
@@ -218,13 +225,12 @@ pub enum ContractError {
     InvalidBonusGoal = 12,
     /// Returned by `initialize` when `goal < MIN_GOAL_AMOUNT`.
     GoalTooLow = 13,
-
     /// Returned by `contribute` when `amount` is zero.
-    ZeroAmount = 18,
-    BelowMinimum = 14,
-    CampaignNotActive = 15,
+    ZeroAmount = 14,
+    BelowMinimum = 15,
+    CampaignNotActive = 16,
     /// Returned by `contribute` when `amount` is negative.
-    NegativeAmount = 16,
+    NegativeAmount = 17,
 }
 
 /// Interface for an external NFT contract used to mint contributor rewards.
@@ -289,7 +295,16 @@ impl CrowdfundContract {
                 bonus_goal,
                 bonus_goal_description,
             },
-        )
+        )?;
+
+        // Store optional max individual contribution cap.
+        if let Some(max_contrib) = max_individual_contribution {
+            env.storage()
+                .instance()
+                .set(&DataKey::MaxIndividualContribution, &max_contrib);
+        }
+
+        Ok(())
     }
 
     /// Returns the list of all contributor addresses.
@@ -343,7 +358,7 @@ impl CrowdfundContract {
             load_address_stream_state(&env, &DataKey::Contributors, &contributor);
         let is_new_contributor = !contributor_stream.contains_target;
         if is_new_contributor {
-            if let Err(err) =
+            if let Err(_) =
                 contract_state_size::validate_contributor_capacity(contributor_stream.entries.len())
             {
                 panic!("state size limit exceeded");
@@ -460,7 +475,7 @@ impl CrowdfundContract {
         let mut pledger_stream = load_address_stream_state(&env, &DataKey::Pledgers, &pledger);
         let is_new_pledger = !pledger_stream.contains_target;
         if is_new_pledger {
-            if let Err(err) =
+            if let Err(_) =
                 contract_state_size::validate_pledger_capacity(pledger_stream.entries.len())
             {
                 panic!("state size limit exceeded");
@@ -835,7 +850,7 @@ impl CrowdfundContract {
             .map(|value| value.len())
             .or_else(|| current_socials.as_ref().map(|value| value.len()))
             .unwrap_or(0);
-        if let Err(err) = contract_state_size::validate_metadata_total_length(
+        if let Err(_) = contract_state_size::validate_metadata_total_length(
             title_length,
             description_length,
             socials_length,
@@ -845,7 +860,7 @@ impl CrowdfundContract {
 
         // Update title if provided.
         if let Some(new_title) = title {
-            if let Err(err) = contract_state_size::validate_title(&new_title) {
+            if let Err(_) = contract_state_size::validate_title(&new_title) {
                 panic!("state size limit exceeded");
             }
             env.storage().instance().set(&DataKey::Title, &new_title);
@@ -854,7 +869,7 @@ impl CrowdfundContract {
 
         // Update description if provided.
         if let Some(new_description) = description {
-            if let Err(err) = contract_state_size::validate_description(&new_description) {
+            if let Err(_) = contract_state_size::validate_description(&new_description) {
                 panic!("state size limit exceeded");
             }
             env.storage()
@@ -865,7 +880,7 @@ impl CrowdfundContract {
 
         // Update social links if provided.
         if let Some(new_socials) = socials {
-            if let Err(err) = contract_state_size::validate_social_links(&new_socials) {
+            if let Err(_) = contract_state_size::validate_social_links(&new_socials) {
                 panic!("state size limit exceeded");
             }
             env.storage()
@@ -907,10 +922,10 @@ impl CrowdfundContract {
             .instance()
             .get(&DataKey::Roadmap)
             .unwrap_or_else(|| Vec::new(&env));
-        if let Err(err) = contract_state_size::validate_roadmap_capacity(roadmap.len()) {
+        if let Err(_) = contract_state_size::validate_roadmap_capacity(roadmap.len()) {
             panic!("state size limit exceeded");
         }
-        if let Err(err) = contract_state_size::validate_roadmap_description(&description) {
+        if let Err(_) = contract_state_size::validate_roadmap_description(&description) {
             panic!("state size limit exceeded");
         }
 
@@ -953,7 +968,7 @@ impl CrowdfundContract {
             .instance()
             .get(&DataKey::StretchGoals)
             .unwrap_or_else(|| Vec::new(&env));
-        if let Err(err) = contract_state_size::validate_stretch_goal_capacity(stretch_goals.len()) {
+        if let Err(_) = contract_state_size::validate_stretch_goal_capacity(stretch_goals.len()) {
             panic!("state size limit exceeded");
         }
 
