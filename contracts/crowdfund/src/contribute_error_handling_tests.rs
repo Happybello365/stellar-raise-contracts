@@ -16,7 +16,7 @@ use soroban_sdk::{
 
 use crate::{contribute_error_handling, ContractError, CrowdfundContract, CrowdfundContractClient};
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// ── helpers ───────────────────────────────────────────────────────────────────
 
 const GOAL: i128 = 1_000;
 const MIN: i128 = 10;
@@ -32,7 +32,7 @@ fn setup() -> (Env, CrowdfundContractClient<'static>, Address) {
     let token_admin = Address::generate(&env);
     let token_id = env.register_stellar_asset_contract_v2(token_admin.clone());
     let token_addr = token_id.address();
-    let sac = token::StellarAssetClient::new(&env, &token_addr);
+    let asset_client = token::StellarAssetClient::new(&env, &token_addr);
 
     let creator = Address::generate(&env);
     let contributor = Address::generate(&env);
@@ -264,6 +264,27 @@ fn is_retryable_state_errors_are_not_retryable() {
 
 // ── diagnostic events ─────────────────────────────────────────────────────────
 
+/// Returns the last `contribute_error` event as `(variant_symbol, error_code)`.
+fn last_contribute_error_event(env: &Env) -> Option<(Symbol, u32)> {
+    let topic0_str = soroban_sdk::String::from_str(env, "contribute_error");
+    env.events()
+        .all()
+        .iter()
+        .rev()
+        .find_map(|(_, topics, data)| {
+            if topics.len() < 2 {
+                return None;
+            }
+            let t0 = soroban_sdk::String::from_val(env, &topics.get(0)?).ok()?;
+            if t0 != topic0_str {
+                return None;
+            }
+            let t1 = Symbol::from_val(env, &topics.get(1)?).ok()?;
+            let code = u32::from_val(env, &data).ok()?;
+            Some((t1, code))
+        })
+}
+
 #[test]
 fn error_event_emitted_on_campaign_ended() {
     let (env, client, contributor) = setup();
@@ -307,6 +328,19 @@ fn error_event_emitted_on_campaign_not_active() {
     assert_eq!(
         code,
         contribute_error_handling::error_codes::CAMPAIGN_NOT_ACTIVE
+    );
+}
+
+#[test]
+fn error_event_emitted_on_negative_amount() {
+    let (env, client, contributor) = setup();
+    env.ledger().set_timestamp(env.ledger().timestamp() + 1);
+    let _ = client.try_contribute(&contributor, &-1);
+    let (variant, code) = last_contribute_error_event(&env).expect("no event emitted");
+    assert_eq!(variant, Symbol::new(&env, "NegativeAmount"));
+    assert_eq!(
+        code,
+        contribute_error_handling::error_codes::NEGATIVE_AMOUNT
     );
 }
 
