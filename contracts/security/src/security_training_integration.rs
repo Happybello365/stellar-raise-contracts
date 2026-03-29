@@ -17,7 +17,7 @@
 
 #![allow(dead_code)]
 
-use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, String, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, String};
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -401,6 +401,87 @@ impl SecurityTrainingIntegration {
         true
     }
 
+    // ── In-progress tracking ──────────────────────────────────────────────────
+
+    /// @notice  Marks a module as `InProgress` for a team member.
+    /// @dev     Creates or overwrites the record with `InProgress` status.
+    ///          Emits a `mod_start` event.  Does not overwrite a `Completed`
+    ///          record — a member cannot un-complete a module.
+    /// @custom:security-note  `InProgress` must never satisfy the access gate;
+    ///          only `Completed` records count.
+    /// @param   env        Soroban environment.
+    /// @param   member     Address of the team member.
+    /// @param   module_id  ID of the module being started.
+    /// @return  `true` if the record was updated, `false` if already Completed.
+    pub fn start_module(env: Env, member: Address, module_id: u32) -> bool {
+        let existing: Option<TrainingRecord> = env
+            .storage()
+            .instance()
+            .get(&DataKey::Record(member.clone(), module_id));
+
+        // Do not downgrade a Completed record.
+        if let Some(ref r) = existing {
+            if r.status == TrainingStatus::Completed {
+                return false;
+            }
+        }
+
+        let record = TrainingRecord {
+            member: member.clone(),
+            module_id,
+            status: TrainingStatus::InProgress,
+            score: 0,
+            completed_at: env.ledger().timestamp(),
+        };
+
+        env.storage()
+            .instance()
+            .set(&DataKey::Record(member.clone(), module_id), &record);
+
+        env.events().publish(
+            (symbol_short!("training"),),
+            (symbol_short!("mod_strt"), module_id),
+        );
+
+        true
+    }
+
+    // ── Revocation ────────────────────────────────────────────────────────────
+
+    /// @notice  Revokes a member's completion record, resetting it to `Failed`.
+    /// @dev     Used by admins when a member's training is found to be invalid
+    ///          (e.g. cheating, policy change).  Emits a `revoked` event.
+    /// @custom:security-note  After revocation the member loses privileged
+    ///          access until they re-complete the module with a passing score.
+    /// @param   env        Soroban environment.
+    /// @param   member     Address of the team member.
+    /// @param   module_id  ID of the module to revoke.
+    /// @return  `true` if a record existed and was revoked, `false` otherwise.
+    pub fn revoke_completion(env: Env, member: Address, module_id: u32) -> bool {
+        let existing: Option<TrainingRecord> = env
+            .storage()
+            .instance()
+            .get(&DataKey::Record(member.clone(), module_id));
+
+        match existing {
+            None => false,
+            Some(mut record) => {
+                record.status = TrainingStatus::Failed;
+                record.score = 0;
+                env.storage()
+                    .instance()
+                    .set(&DataKey::Record(member.clone(), module_id), &record);
+
+                env.events().publish(
+                    (symbol_short!("training"),),
+                    (symbol_short!("revoked"), module_id),
+                );
+
+                true
+            }
+        }
+    }
+
     // ── Reporting ─────────────────────────────────────────────────────────────
 
     /// @notice  Computes a compliance score (0–100) for a team member.
@@ -426,5 +507,65 @@ impl SecurityTrainingIntegration {
             }
         }
         compute_compliance_score(completed, count)
+    }
+
+    /// @notice  Returns a `TrainingReport` for a member built from on-chain state.
+    /// @dev     Reads all registered modules and the member's records, then
+    ///          computes the report inline (no `std` allocation needed).
+    /// @param   env     Soroban environment.
+    /// @param   member  Address of the team member.
+    pub fn training_summary(env: Env, member: Address) -> TrainingReport {
+        let count = Self::module_count(env.clone());
+        let mut total = 0u32;
+        let mut completed_count = 0u32;
+        let mut incomplete_count = 0u32;
+        let mut all_required_ok = true;
+
+        for id in 1..=count {
+            let module = match Self::get_module(env.clone(), id) {
+                Some(m) => m,
+                None => continue,
+            };
+            total = total.saturating_add(1);
+
+            let record: Option<TrainingRecord> = env
+                .storage()
+                .instance()
+                .get(&DataKey::Record(member.clone(), id));
+
+            let status = record
+                .as_ref()
+                .map(|r| r.status.clone())
+                .unwrap_or(TrainingStatus::NotStarted);
+
+            match status {
+                TrainingStatus::Completed => {
+                    completed_count = completed_count.saturating_add(1);
+                }
+                TrainingStatus::Failed | TrainingStatus::Expired => {
+                    incomplete_count = incomplete_count.saturating_add(1);
+                    if module.required {
+                        all_required_ok = false;
+                    }
+                }
+                _ => {
+                    // NotStarted or InProgress
+                    if module.required {
+                        all_required_ok = false;
+                    }
+                }
+            }
+        }
+
+        let score = compute_compliance_score(completed_count, total);
+
+        TrainingReport {
+            member,
+            total_modules: total,
+            completed_modules: completed_count,
+            incomplete_modules: incomplete_count,
+            all_required_complete: all_required_ok,
+            compliance_score: score,
+        }
     }
 }
