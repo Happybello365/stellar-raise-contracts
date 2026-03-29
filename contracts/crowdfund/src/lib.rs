@@ -57,6 +57,9 @@ use withdraw_event_emission::{emit_fee_transferred, emit_withdrawn, mint_nfts_in
 #[cfg(test)]
 mod access_control_tests;
 #[cfg(test)]
+#[path = "access_control.test.rs"]
+mod access_control_test;
+#[cfg(test)]
 #[path = "admin_upgrade_mechanism.test.rs"]
 mod admin_upgrade_mechanism_test;
 #[cfg(test)]
